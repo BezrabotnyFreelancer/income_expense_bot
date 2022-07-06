@@ -265,7 +265,7 @@ def get_single_value(user, table_name: str, operation: str, interval: int):
     return data
 
 
-def get_total_value(user, table_name, interval):
+def get_total_value(user, table_name: str, interval: int):
     if int(interval) > 0:
         filter = f'AND "DATE" BETWEEN DATETIME("now", "-{interval} month") AND DATETIME("now", "localtime") ORDER BY "DATE"'
     else:
