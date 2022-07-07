@@ -91,15 +91,9 @@ def expense(message):
     # Close connection with database
     conn.close()
 
+
 cmd_income = 'income'
 cmd_expense = 'expense'
-cmd_income_sum = 'sum_income'
-cmd_expense_sum = 'sum_expense'
-cmd_income_avg = 'avg_income'
-cmd_expense_avg = 'avg_expense'
-cmd_income_count = 'count_income'
-cmd_expense_count = 'count_expense'
-
 
 # Make buttons for navigate in incomes table
 @bot.message_handler(commands=['showincomes'])
@@ -141,11 +135,11 @@ def show_expenses(message):
 @bot.message_handler(commands=['incomessum'])
 def incomes_sum(message):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Sum of incomes', callback_data=f'{cmd_income_sum};sum;0'))
-    markup.add(types.InlineKeyboardButton(text='Sum of incomes for 12 months', callback_data=f'{cmd_income_sum};sum;12'))
-    markup.add(types.InlineKeyboardButton(text='Sum of incomes for 6 months', callback_data=f'{cmd_income_sum};sum;6'))
-    markup.add(types.InlineKeyboardButton(text='Sum of incomes for 3 months', callback_data=f'{cmd_income_sum};sum;3'))
-    markup.add(types.InlineKeyboardButton(text='Sum of incomes for 1 month', callback_data=f'{cmd_income_sum};sum;1'))
+    markup.add(types.InlineKeyboardButton(text='Sum of incomes', callback_data=f'{cmd_income};sum;0'))
+    markup.add(types.InlineKeyboardButton(text='Sum of incomes for 12 months', callback_data=f'{cmd_income};sum;12'))
+    markup.add(types.InlineKeyboardButton(text='Sum of incomes for 6 months', callback_data=f'{cmd_income};sum;6'))
+    markup.add(types.InlineKeyboardButton(text='Sum of incomes for 3 months', callback_data=f'{cmd_income};sum;3'))
+    markup.add(types.InlineKeyboardButton(text='Sum of incomes for 1 month', callback_data=f'{cmd_income};sum;1'))
     
     # Reply markup in chat
     bot.send_message(
@@ -159,11 +153,11 @@ def incomes_sum(message):
 @bot.message_handler(commands=['averageincomes'])
 def incomes_average(message):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Average sum of incomes', callback_data=f'{cmd_income_avg};avg;0'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of incomes for 12 months', callback_data=f'{cmd_income_avg};avg;12'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of incomes for 6 months', callback_data=f'{cmd_income_avg};avg;6'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of incomes for 3 months', callback_data=f'{cmd_income_avg};avg;3'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of incomes for 1 month', callback_data=f'{cmd_income_avg};avg;1'))
+    markup.add(types.InlineKeyboardButton(text='Average sum of incomes', callback_data=f'{cmd_income};avg;0'))
+    markup.add(types.InlineKeyboardButton(text='Average sum of incomes for 12 months', callback_data=f'{cmd_income};avg;12'))
+    markup.add(types.InlineKeyboardButton(text='Average sum of incomes for 6 months', callback_data=f'{cmd_income};avg;6'))
+    markup.add(types.InlineKeyboardButton(text='Average sum of incomes for 3 months', callback_data=f'{cmd_income};avg;3'))
+    markup.add(types.InlineKeyboardButton(text='Average sum of incomes for 1 month', callback_data=f'{cmd_income};avg;1'))
     
     # Reply markup in chat
     bot.send_message(
@@ -177,11 +171,11 @@ def incomes_average(message):
 @bot.message_handler(commands=['countincomes'])
 def count_of_incomes(message):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Count of incomes', callback_data=f'{cmd_income_count};count;0'))
-    markup.add(types.InlineKeyboardButton(text='Count of incomes for 12 months', callback_data=f'{cmd_income_count};count;12'))
-    markup.add(types.InlineKeyboardButton(text='Count of incomes for 6 months', callback_data=f'{cmd_income_count};count;6'))
-    markup.add(types.InlineKeyboardButton(text='Coumt of incomes for 3 months', callback_data=f'{cmd_income_count};count;3'))
-    markup.add(types.InlineKeyboardButton(text='Count of incomes for 1 month', callback_data=f'{cmd_income_count};count;1'))
+    markup.add(types.InlineKeyboardButton(text='Count of incomes', callback_data=f'{cmd_income};count;0'))
+    markup.add(types.InlineKeyboardButton(text='Count of incomes for 12 months', callback_data=f'{cmd_income};count;12'))
+    markup.add(types.InlineKeyboardButton(text='Count of incomes for 6 months', callback_data=f'{cmd_income};count;6'))
+    markup.add(types.InlineKeyboardButton(text='Coumt of incomes for 3 months', callback_data=f'{cmd_income};count;3'))
+    markup.add(types.InlineKeyboardButton(text='Count of incomes for 1 month', callback_data=f'{cmd_income};count;1'))
     
     # Reply markup in chat
     bot.send_message(
@@ -195,11 +189,11 @@ def count_of_incomes(message):
 @bot.message_handler(commands=['expensessum'])
 def incomes_sum(message):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Sum of expenses', callback_data=f'{cmd_expense_sum};sum;0'))
-    markup.add(types.InlineKeyboardButton(text='Sum of expenses for 12 months', callback_data=f'{cmd_expense_sum};sum;12'))
-    markup.add(types.InlineKeyboardButton(text='Sum of expenses for 6 months', callback_data=f'{cmd_expense_sum};sum;6'))
-    markup.add(types.InlineKeyboardButton(text='Sum of expenses for 3 months', callback_data=f'{cmd_expense_sum};sum;3'))
-    markup.add(types.InlineKeyboardButton(text='Sum of expenses for 1 month', callback_data=f'{cmd_expense_sum};sum;1'))
+    markup.add(types.InlineKeyboardButton(text='Sum of expenses', callback_data=f'{cmd_expense};sum;0'))
+    markup.add(types.InlineKeyboardButton(text='Sum of expenses for 12 months', callback_data=f'{cmd_expense};sum;12'))
+    markup.add(types.InlineKeyboardButton(text='Sum of expenses for 6 months', callback_data=f'{cmd_expense};sum;6'))
+    markup.add(types.InlineKeyboardButton(text='Sum of expenses for 3 months', callback_data=f'{cmd_expense};sum;3'))
+    markup.add(types.InlineKeyboardButton(text='Sum of expenses for 1 month', callback_data=f'{cmd_expense};sum;1'))
     
     # Reply markup in database
     bot.send_message(
@@ -213,11 +207,11 @@ def incomes_sum(message):
 @bot.message_handler(commands=['averageexpenses'])
 def incomes_average(message):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Average sum of expenses', callback_data=f'{cmd_expense_avg};avg;0'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of expenses for 12 months', callback_data=f'{cmd_expense_avg};avg;12'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of expenses for 6 months', callback_data=f'{cmd_expense_avg};avg;6'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of expenses for 3 months', callback_data=f'{cmd_expense_avg};avg;3'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of expenses for 1 month', callback_data=f'{cmd_expense_avg};avg;1'))
+    markup.add(types.InlineKeyboardButton(text='Average sum of expenses', callback_data=f'{cmd_expense};avg;0'))
+    markup.add(types.InlineKeyboardButton(text='Average sum of expenses for 12 months', callback_data=f'{cmd_expense};avg;12'))
+    markup.add(types.InlineKeyboardButton(text='Average sum of expenses for 6 months', callback_data=f'{cmd_expense};avg;6'))
+    markup.add(types.InlineKeyboardButton(text='Average sum of expenses for 3 months', callback_data=f'{cmd_expense};avg;3'))
+    markup.add(types.InlineKeyboardButton(text='Average sum of expenses for 1 month', callback_data=f'{cmd_expense};avg;1'))
     
     # Reply markup in chat
     bot.send_message(
@@ -231,11 +225,11 @@ def incomes_average(message):
 @bot.message_handler(commands=['countexpenses'])
 def count_of_incomes(message):
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Count of expenses', callback_data=f'{cmd_expense_count};count;0'))
-    markup.add(types.InlineKeyboardButton(text='Count of expenses for 12 months', callback_data=f'{cmd_expense_count};count;12'))
-    markup.add(types.InlineKeyboardButton(text='Count of expenses for 6 months', callback_data=f'{cmd_expense_count};count;6'))
-    markup.add(types.InlineKeyboardButton(text='Coumt of expenses for 3 months', callback_data=f'{cmd_expense_count};count;3'))
-    markup.add(types.InlineKeyboardButton(text='Count of expenses for 1 month', callback_data=f'{cmd_expense_count};count;1'))
+    markup.add(types.InlineKeyboardButton(text='Count of expenses', callback_data=f'{cmd_expense};count;0'))
+    markup.add(types.InlineKeyboardButton(text='Count of expenses for 12 months', callback_data=f'{cmd_expense};count;12'))
+    markup.add(types.InlineKeyboardButton(text='Count of expenses for 6 months', callback_data=f'{cmd_expense};count;6'))
+    markup.add(types.InlineKeyboardButton(text='Coumt of expenses for 3 months', callback_data=f'{cmd_expense};count;3'))
+    markup.add(types.InlineKeyboardButton(text='Count of expenses for 1 month', callback_data=f'{cmd_expense};count;1'))
     bot.send_message(
         message.chat.id,
         text='Count options',
@@ -260,7 +254,7 @@ def get_single_value(user, table_name: str, operation: str, interval: int):
     conn = sqlite3.connect('Balance/Balance.db')
     cursor = conn.cursor()
     cursor.execute(f'SELECT {func}(TOTAL) FROM {table_name} WHERE USER_ID = {user} {filter}')
-    data = cursor.fetchone()[0]
+    data = round(cursor.fetchone()[0], 2)
     conn.close()
     return data
 
@@ -288,45 +282,28 @@ def callback_options(call):
     if call.data.startswith(cmd_income) or call.data.startswith(cmd_expense):
         cmd_parms = call.data.split(';')
         if len(cmd_parms) < 4:
+            if cmd_parms[1] != 'all':
+                data = get_single_value(user, cmd_parms[0].upper(), cmd_parms[1], cmd_parms[2])
+                if cmd_parms[2] == '0':
+                    tail = ''
+                else:
+                    tail = f'for {cmd_parms[2]} months'
 
-            # Select full info from our table
-            data = get_total_value(user, cmd_parms[0].upper(), cmd_parms[2])
-
-            # Send messages consist's from info about incomes (id, total sum, date of add in database)
-            for income in data:
                 bot.send_message(
                     call.message.chat.id,
-                    text=f'ID: {income[0]} - Total: {income[2]}, date: {income[3]}'
+                    text=f'{cmd_parms[1].title()} of {cmd_parms[0]} {tail}: {data}'
                 )
 
-    elif call.data.startswith(cmd_income_sum) or call.data.startswith(cmd_income_count) or call.data.startswith(cmd_income_avg):
-        cmd_parms = call.data.split(';')
-        if len(cmd_parms) < 4:
-            data = get_single_value(user, 'INCOME', cmd_parms[1], cmd_parms[2])
-            if cmd_parms[2] == '0':
-                tail = ''
+            # Select full info from our table
             else:
-                tail = f'for {cmd_parms[2]} months'
+                data = get_total_value(user, cmd_parms[0].upper(), cmd_parms[2])
 
-            bot.send_message(
-                call.message.chat.id,
-                text=f'{cmd_parms[1].title()} of incomes {tail}: {data}'
-                )
-
-    elif call.data.startswith(cmd_expense_avg) or call.data.startswith(cmd_expense_sum) or call.data.startswith(cmd_expense_count):
-        cmd_parms = call.data.split(';')
-        if len(cmd_parms) < 4:
-
-            data = get_single_value(user, 'EXPENSE', cmd_parms[1], cmd_parms[2])
-            if cmd_parms[2] == '0':
-                tail = ''
-            else:
-                tail = f'for {cmd_parms[2]} months'
-
-            bot.send_message(
-                call.message.chat.id,
-                text=f'{cmd_parms[1].title()} of expenses {tail}: {data}'
-                )
+                # Send messages consist's from info about incomes (id, total sum, date of add in database)
+                for income in data:
+                    bot.send_message(
+                        call.message.chat.id,
+                        text=f'ID: {income[0]} - Total: {income[2]}, date: {income[3]}'
+                    )
 
 
 if __name__ == '__main__':
