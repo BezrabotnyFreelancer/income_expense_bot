@@ -14,7 +14,7 @@ bot = telebot.TeleBot(token)
 def start(message):
     
     # Connect to our database
-    conn = sqlite3.connect('Balance/Balance.db')
+    conn = sqlite3.connect('NewBalance/Balance/Balance.db')
     cursor = conn.cursor()
     
     # Create table
@@ -39,18 +39,28 @@ def start(message):
     
     # Close connection with database
     conn.close()
-    
+
+
 # Manual for our user
 @bot.message_handler(commands=['help'])
 def help(message):
-    bot.send_message(message.chat.id, text='/income and data - Add info about incomes in database, ex: /income 1000\n/expense and data - Add info about expenses in database, ex: /expense 1000\n/showincomes - Show options with incomes\n/showexpenses - Show options with expenses\n/incomessum - Show options for sum of incomes\n/averageincomes - Show options for average sum of incomes\n/countincomes - SHow options for count of incomes\n/expensessum - Show options for sum of expenses\n/averageexpenses - Show options for average sum of expenses\n/countexpenses - Show options for count of expenses')
-                         
+    text = '/income and data - Add info about incomes in database, ex: /income 1000\n' \
+           '/expense and data - Add info about expenses in database, ex: /expense 1000\n' \
+           '/showincomes - Show options with incomes\n/showexpenses - Show options with expenses\n' \
+           '/incomessum - Show options for sum of incomes\n/averageincomes - Show options for average sum of incomes\n' \
+           '/countincomes - SHow options for count of incomes\n/expensessum - Show options for sum of expenses\n' \
+           '/averageexpenses - Show options for average sum of expenses\n' \
+           '/countexpenses - Show options for count of expenses'
+
+    bot.send_message(message.chat.id, text=text)
+
+
 # Function for add information about user's income
 @bot.message_handler(commands=['income'])
 def income(message):
     
     # Connect to database
-    conn = sqlite3.connect('Balance/Balance.db')
+    conn = sqlite3.connect('Balance.db')
     cursor = conn.cursor()
     
     # Make variables consists from date and info about user's income
@@ -67,13 +77,14 @@ def income(message):
     
     # Close connection with database
     conn.close()
-    
+
+
 # Function for add information about user's expenses
 @bot.message_handler(commands=['expense'])
 def expense(message):
     
     # Connect to database
-    conn = sqlite3.connect('Balance/Balance.db')
+    conn = sqlite3.connect('Balance.db')
     cursor = conn.cursor()
     
     # Create table of expenses if not exists
@@ -95,145 +106,95 @@ def expense(message):
 cmd_income = 'income'
 cmd_expense = 'expense'
 
+
+def create_markup(table: str, kind: str, *args):
+    markup = types.InlineKeyboardMarkup()
+    for i in args:
+        if i == 0:
+            text = f'Total {"" if kind == "all" else kind + " of"} {table}s'
+            markup.add(types.InlineKeyboardButton(text=text, callback_data=f'{table};{kind};{i}'))
+        else:
+            text = f'{table.title() + "s" if kind == "all" else kind.title() + " of " + table} for {i} months'
+            markup.add(types.InlineKeyboardButton(text=text, callback_data=f'{table};{kind};{i}'))
+    return markup
+
 # Make buttons for navigate in incomes table
 @bot.message_handler(commands=['showincomes'])
 def show_incomes(message):
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Total incomes', callback_data=f'{cmd_income};all;0'))
-    markup.add(types.InlineKeyboardButton(text='Incomes for 12 months', callback_data=f'{cmd_income};all;12'))
-    markup.add(types.InlineKeyboardButton(text='Incomes for 6 months', callback_data=f'{cmd_income};all;6'))
-    markup.add(types.InlineKeyboardButton(text='Incomes for 3 months', callback_data=f'{cmd_income};all;3'))
-    markup.add(types.InlineKeyboardButton(text='Incomes for 1 month', callback_data=f'{cmd_income};all;1'))
-    
-    # Reply our markup in chat
     bot.send_message(
         message.chat.id,
         text='Period options',
-        reply_markup=markup
+        reply_markup=create_markup(cmd_income, 'all', 0, 12, 6, 3, 1)
     )
 
 
 # Make buttons for navigate in expenses table
 @bot.message_handler(commands=['showexpenses'])
 def show_expenses(message):
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Total expenses', callback_data=f'{cmd_expense};all;0'))
-    markup.add(types.InlineKeyboardButton(text='Expenses for 12 months', callback_data=f'{cmd_expense};all;12'))
-    markup.add(types.InlineKeyboardButton(text='Expenses for 6 months', callback_data=f'{cmd_expense};all;6'))
-    markup.add(types.InlineKeyboardButton(text='Expenses for 3 months', callback_data=f'{cmd_expense};all;3'))
-    markup.add(types.InlineKeyboardButton(text='Expenses for 1 month', callback_data=f'{cmd_expense};all;1'))
-    
-    # Reply our markup in chat
     bot.send_message(
         message.chat.id,
         text='Period options',
-        reply_markup=markup
+        reply_markup=create_markup(cmd_expense, 'all', 0, 12, 6, 3, 1)
     )
 
 
 # Make buttons for send info about total sum of income in different period
 @bot.message_handler(commands=['incomessum'])
 def incomes_sum(message):
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Sum of incomes', callback_data=f'{cmd_income};sum;0'))
-    markup.add(types.InlineKeyboardButton(text='Sum of incomes for 12 months', callback_data=f'{cmd_income};sum;12'))
-    markup.add(types.InlineKeyboardButton(text='Sum of incomes for 6 months', callback_data=f'{cmd_income};sum;6'))
-    markup.add(types.InlineKeyboardButton(text='Sum of incomes for 3 months', callback_data=f'{cmd_income};sum;3'))
-    markup.add(types.InlineKeyboardButton(text='Sum of incomes for 1 month', callback_data=f'{cmd_income};sum;1'))
-    
-    # Reply markup in chat
     bot.send_message(
         message.chat.id,
         text='Options for sum',
-        reply_markup=markup
+        reply_markup=create_markup(cmd_income, 'sum', 0, 12, 6, 3, 1)
     )    
 
 
 # Make buttons for send info about average sum of incomes in different period
 @bot.message_handler(commands=['averageincomes'])
 def incomes_average(message):
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Average sum of incomes', callback_data=f'{cmd_income};avg;0'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of incomes for 12 months', callback_data=f'{cmd_income};avg;12'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of incomes for 6 months', callback_data=f'{cmd_income};avg;6'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of incomes for 3 months', callback_data=f'{cmd_income};avg;3'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of incomes for 1 month', callback_data=f'{cmd_income};avg;1'))
-    
-    # Reply markup in chat
     bot.send_message(
         message.chat.id,
         text='Average options',
-        reply_markup=markup
+        reply_markup=create_markup(cmd_income, 'avg', 0, 12, 6, 3, 1)
     )
 
 
 # Make buttons for send info about count of incomes in defferent period
 @bot.message_handler(commands=['countincomes'])
 def count_of_incomes(message):
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Count of incomes', callback_data=f'{cmd_income};count;0'))
-    markup.add(types.InlineKeyboardButton(text='Count of incomes for 12 months', callback_data=f'{cmd_income};count;12'))
-    markup.add(types.InlineKeyboardButton(text='Count of incomes for 6 months', callback_data=f'{cmd_income};count;6'))
-    markup.add(types.InlineKeyboardButton(text='Coumt of incomes for 3 months', callback_data=f'{cmd_income};count;3'))
-    markup.add(types.InlineKeyboardButton(text='Count of incomes for 1 month', callback_data=f'{cmd_income};count;1'))
-    
-    # Reply markup in chat
     bot.send_message(
         message.chat.id,
         text='Count options',
-        reply_markup=markup
+        reply_markup=create_markup(cmd_income, 'count', 0, 12, 6, 3, 1)
     )    
 
 
 # Make buttons for send info about sum of expenses in defferent period
 @bot.message_handler(commands=['expensessum'])
 def incomes_sum(message):
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Sum of expenses', callback_data=f'{cmd_expense};sum;0'))
-    markup.add(types.InlineKeyboardButton(text='Sum of expenses for 12 months', callback_data=f'{cmd_expense};sum;12'))
-    markup.add(types.InlineKeyboardButton(text='Sum of expenses for 6 months', callback_data=f'{cmd_expense};sum;6'))
-    markup.add(types.InlineKeyboardButton(text='Sum of expenses for 3 months', callback_data=f'{cmd_expense};sum;3'))
-    markup.add(types.InlineKeyboardButton(text='Sum of expenses for 1 month', callback_data=f'{cmd_expense};sum;1'))
-    
-    # Reply markup in database
     bot.send_message(
         message.chat.id,
         text='Options for sum',
-        reply_markup=markup
+        reply_markup=create_markup(cmd_expense, 'sum', 0, 12, 6, 3, 1)
     )    
 
 
 # Make buttons for send info about average sum of expenses in different period
 @bot.message_handler(commands=['averageexpenses'])
 def incomes_average(message):
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Average sum of expenses', callback_data=f'{cmd_expense};avg;0'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of expenses for 12 months', callback_data=f'{cmd_expense};avg;12'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of expenses for 6 months', callback_data=f'{cmd_expense};avg;6'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of expenses for 3 months', callback_data=f'{cmd_expense};avg;3'))
-    markup.add(types.InlineKeyboardButton(text='Average sum of expenses for 1 month', callback_data=f'{cmd_expense};avg;1'))
-    
-    # Reply markup in chat
     bot.send_message(
         message.chat.id,
         text='Average options',
-        reply_markup=markup
+        reply_markup=create_markup(cmd_expense, 'avg', 0, 12, 6, 3, 1)
     )
 
 
 # Make buttons for send info about count of expenses in different period
 @bot.message_handler(commands=['countexpenses'])
 def count_of_incomes(message):
-    markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton(text='Count of expenses', callback_data=f'{cmd_expense};count;0'))
-    markup.add(types.InlineKeyboardButton(text='Count of expenses for 12 months', callback_data=f'{cmd_expense};count;12'))
-    markup.add(types.InlineKeyboardButton(text='Count of expenses for 6 months', callback_data=f'{cmd_expense};count;6'))
-    markup.add(types.InlineKeyboardButton(text='Coumt of expenses for 3 months', callback_data=f'{cmd_expense};count;3'))
-    markup.add(types.InlineKeyboardButton(text='Count of expenses for 1 month', callback_data=f'{cmd_expense};count;1'))
     bot.send_message(
         message.chat.id,
         text='Count options',
-        reply_markup=markup
+        reply_markup=create_markup(cmd_expense, 'count', 0, 12, 6, 3, 1)
     )
 
 
@@ -251,7 +212,7 @@ def get_single_value(user, table_name: str, operation: str, interval: int):
     else:
         filter = ''
 
-    conn = sqlite3.connect('Balance/Balance.db')
+    conn = sqlite3.connect('Balance.db')
     cursor = conn.cursor()
     cursor.execute(f'SELECT {func}(TOTAL) FROM {table_name} WHERE USER_ID = {user} {filter}')
     data = round(cursor.fetchone()[0], 2)
@@ -264,7 +225,7 @@ def get_total_value(user, table_name: str, interval: int):
         filter = f'AND "DATE" BETWEEN DATETIME("now", "-{interval} month") AND DATETIME("now", "localtime") ORDER BY "DATE"'
     else:
         filter = ''
-    conn = sqlite3.connect('Balance/Balance.db')
+    conn = sqlite3.connect('Balance.db')
     cursor = conn.cursor()
     cursor.execute(f'SELECT * FROM {table_name} WHERE USER_ID = {user} {filter}')
     data = cursor.fetchall()
@@ -284,10 +245,7 @@ def callback_options(call):
         if len(cmd_parms) < 4:
             if cmd_parms[1] != 'all':
                 data = get_single_value(user, cmd_parms[0].upper(), cmd_parms[1], cmd_parms[2])
-                if cmd_parms[2] == '0':
-                    tail = ''
-                else:
-                    tail = f'for {cmd_parms[2]} months'
+                tail = '' if cmd_parms[2] == '0' else f'for {cmd_parms[2]} months'
 
                 bot.send_message(
                     call.message.chat.id,
@@ -299,10 +257,10 @@ def callback_options(call):
                 data = get_total_value(user, cmd_parms[0].upper(), cmd_parms[2])
 
                 # Send messages consist's from info about incomes (id, total sum, date of add in database)
-                for income in data:
+                for value in data:
                     bot.send_message(
                         call.message.chat.id,
-                        text=f'ID: {income[0]} - Total: {income[2]}, date: {income[3]}'
+                        text=f'ID: {value[0]} - Total: {value[2]}, date: {value[3]}'
                     )
 
 
