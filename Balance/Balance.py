@@ -109,13 +109,13 @@ cmd_expense = 'expense'
 
 def create_markup(table: str, kind: str, *args):
     markup = types.InlineKeyboardMarkup()
-    for i in args:
-        if i == 0:
+    for period in args:
+        if period == 0:
             text = f'Total {"" if kind == "all" else kind + " of"} {table}s'
-            markup.add(types.InlineKeyboardButton(text=text, callback_data=f'{table};{kind};{i}'))
+            markup.add(types.InlineKeyboardButton(text=text, callback_data=f'{table};{kind};{period}'))
         else:
-            text = f'{table.title() + "s" if kind == "all" else kind.title() + " of " + table} for {i} months'
-            markup.add(types.InlineKeyboardButton(text=text, callback_data=f'{table};{kind};{i}'))
+            text = f'{table.title() + "s" if kind == "all" else kind.title() + " of " + table} for {period} months'
+            markup.add(types.InlineKeyboardButton(text=text, callback_data=f'{table};{kind};{period}'))
     return markup
 
 # Make buttons for navigate in incomes table
