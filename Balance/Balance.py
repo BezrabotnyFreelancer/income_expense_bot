@@ -107,9 +107,10 @@ cmd_income = 'income'
 cmd_expense = 'expense'
 
 
-def create_markup(table: str, kind: str, *args):
+def create_markup(table: str, kind: str,):
     markup = types.InlineKeyboardMarkup()
-    for period in args:
+    period_list = [0, 12, 6, 3, 1]
+    for period in period_list:
         if period == 0:
             text = f'Total {"" if kind == "all" else kind + " of"} {table}s'
             markup.add(types.InlineKeyboardButton(text=text, callback_data=f'{table};{kind};{period}'))
@@ -124,7 +125,7 @@ def show_incomes(message):
     bot.send_message(
         message.chat.id,
         text='Period options',
-        reply_markup=create_markup(cmd_income, 'all', 0, 12, 6, 3, 1)
+        reply_markup=create_markup(cmd_income, 'all')
     )
 
 
@@ -134,7 +135,7 @@ def show_expenses(message):
     bot.send_message(
         message.chat.id,
         text='Period options',
-        reply_markup=create_markup(cmd_expense, 'all', 0, 12, 6, 3, 1)
+        reply_markup=create_markup(cmd_expense, 'all',)
     )
 
 
@@ -144,7 +145,7 @@ def incomes_sum(message):
     bot.send_message(
         message.chat.id,
         text='Options for sum',
-        reply_markup=create_markup(cmd_income, 'sum', 0, 12, 6, 3, 1)
+        reply_markup=create_markup(cmd_income, 'sum')
     )    
 
 
@@ -154,7 +155,7 @@ def incomes_average(message):
     bot.send_message(
         message.chat.id,
         text='Average options',
-        reply_markup=create_markup(cmd_income, 'avg', 0, 12, 6, 3, 1)
+        reply_markup=create_markup(cmd_income, 'avg')
     )
 
 
@@ -164,7 +165,7 @@ def count_of_incomes(message):
     bot.send_message(
         message.chat.id,
         text='Count options',
-        reply_markup=create_markup(cmd_income, 'count', 0, 12, 6, 3, 1)
+        reply_markup=create_markup(cmd_income, 'count')
     )    
 
 
@@ -174,7 +175,7 @@ def incomes_sum(message):
     bot.send_message(
         message.chat.id,
         text='Options for sum',
-        reply_markup=create_markup(cmd_expense, 'sum', 0, 12, 6, 3, 1)
+        reply_markup=create_markup(cmd_expense, 'sum')
     )    
 
 
@@ -184,7 +185,7 @@ def incomes_average(message):
     bot.send_message(
         message.chat.id,
         text='Average options',
-        reply_markup=create_markup(cmd_expense, 'avg', 0, 12, 6, 3, 1)
+        reply_markup=create_markup(cmd_expense, 'avg')
     )
 
 
@@ -194,12 +195,21 @@ def count_of_incomes(message):
     bot.send_message(
         message.chat.id,
         text='Count options',
-        reply_markup=create_markup(cmd_expense, 'count', 0, 12, 6, 3, 1)
+        reply_markup=create_markup(cmd_expense, 'count')
     )
 
 
-def get_single_value(user, table_name: str, operation: str, interval: int):
-    if operation == 'avg':
+def get_value(user, table_name: str, operation: str, interval: int):
+    filter = f'AND "DATE" BETWEEN DATETIME("now", "-{interval} month") AND DATETIME("now", "localtime") ORDER BY "DATE"' if int(interval) > 0 else ''
+    if operation == 'all':
+        conn = sqlite3.connect('Balance.db')
+        cursor = conn.cursor()
+        cursor.execute(f'SELECT * FROM {table_name} WHERE USER_ID = {user} {filter}')
+        data = cursor.fetchall()
+        conn.close()
+        return data
+
+    elif operation == 'avg':
         func = 'AVG'
     elif operation == 'sum':
         func = 'SUM'
@@ -207,28 +217,11 @@ def get_single_value(user, table_name: str, operation: str, interval: int):
         func = 'COUNT'
     else:
         raise Exception('Not supported function')
-    if int(interval) > 0:
-        filter = f'AND "DATE" BETWEEN DATETIME("now", "-{interval} month") AND DATETIME("now", "localtime") ORDER BY "DATE"'
-    else:
-        filter = ''
 
     conn = sqlite3.connect('Balance.db')
     cursor = conn.cursor()
     cursor.execute(f'SELECT {func}(TOTAL) FROM {table_name} WHERE USER_ID = {user} {filter}')
     data = round(cursor.fetchone()[0], 2)
-    conn.close()
-    return data
-
-
-def get_total_value(user, table_name: str, interval: int):
-    if int(interval) > 0:
-        filter = f'AND "DATE" BETWEEN DATETIME("now", "-{interval} month") AND DATETIME("now", "localtime") ORDER BY "DATE"'
-    else:
-        filter = ''
-    conn = sqlite3.connect('Balance.db')
-    cursor = conn.cursor()
-    cursor.execute(f'SELECT * FROM {table_name} WHERE USER_ID = {user} {filter}')
-    data = cursor.fetchall()
     conn.close()
     return data
 
@@ -242,26 +235,23 @@ def callback_options(call):
 
     if call.data.startswith(cmd_income) or call.data.startswith(cmd_expense):
         cmd_parms = call.data.split(';')
-        if len(cmd_parms) < 4:
-            if cmd_parms[1] != 'all':
-                data = get_single_value(user, cmd_parms[0].upper(), cmd_parms[1], cmd_parms[2])
-                tail = '' if cmd_parms[2] == '0' else f'for {cmd_parms[2]} months'
-
+        # if len(cmd_parms) < 4:
+        #     if cmd_parms[1] != 'all':
+        data = get_value(user, cmd_parms[0].upper(), cmd_parms[1], cmd_parms[2])
+        tail = '' if cmd_parms[2] == '0' else f'for {cmd_parms[2]} months'
+        if type(data) == int or type(data) == float:
+            text = f'{cmd_parms[1].title()} of {cmd_parms[0]} {tail}: {data}'
+            bot.send_message(
+                call.message.chat.id,
+                text=text
+            )
+        else:
+            for value in data:
+                text = f'ID: {value[0]} - Total: {value[2]}, date: {value[3]}'
                 bot.send_message(
                     call.message.chat.id,
-                    text=f'{cmd_parms[1].title()} of {cmd_parms[0]} {tail}: {data}'
+                    text=text
                 )
-
-            # Select full info from our table
-            else:
-                data = get_total_value(user, cmd_parms[0].upper(), cmd_parms[2])
-
-                # Send messages consist's from info about incomes (id, total sum, date of add in database)
-                for value in data:
-                    bot.send_message(
-                        call.message.chat.id,
-                        text=f'ID: {value[0]} - Total: {value[2]}, date: {value[3]}'
-                    )
 
 
 if __name__ == '__main__':
