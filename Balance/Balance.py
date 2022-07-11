@@ -14,7 +14,7 @@ bot = telebot.TeleBot(token)
 def start(message):
     
     # Connect to our database
-    conn = sqlite3.connect('NewBalance/Balance/Balance.db')
+    conn = sqlite3.connect('Balance/Balance.db')
     cursor = conn.cursor()
     
     # Create table
@@ -36,23 +36,47 @@ def start(message):
     # Close connection with database
     conn.close()
 
+cmd_income = 'income'
+cmd_expense = 'expense'
+dir_show_income = 'showincomes'
+dir_show_expense = 'showexpenses'
+dir_sum_income = 'incomessum'
+dir_avg_income = 'averageincomes'
+dir_count_income = 'countincomes'
+dir_sum_expense = 'expensesum'
+dir_avg_expense = 'averageexpenses'
+dir_count_expense = 'countexpenses'
+
+dirs = {
+    dir_show_income: ('Period options', cmd_income, 'all'),
+    dir_show_expense: ('Period options', cmd_expense, 'all'),
+    dir_sum_income: ('Options for sum', cmd_income, 'sum'),
+    dir_sum_expense: ('Options for sum', cmd_expense, 'sum'),
+    dir_avg_income: ('Options for average', cmd_income, 'avg'),
+    dir_avg_expense: ('Options for average', cmd_expense, 'avg'),
+    dir_count_income: ('Options for count', cmd_income, 'count'),
+    dir_count_expense: ('Options for count', cmd_expense, 'count')
+}
 
 # Manual for our user
 @bot.message_handler(commands=['help'])
 def help(message):
-    text = '/income and data - Add info about incomes in database, ex: /income 1000\n' \
-           '/expense and data - Add info about expenses in database, ex: /expense 1000\n' \
-           '/showincomes - Show options with incomes\n/showexpenses - Show options with expenses\n' \
-           '/incomessum - Show options for sum of incomes\n/averageincomes - Show options for average sum of incomes\n' \
-           '/countincomes - SHow options for count of incomes\n/expensessum - Show options for sum of expenses\n' \
-           '/averageexpenses - Show options for average sum of expenses\n' \
-           '/countexpenses - Show options for count of expenses'
+    text = f'/{cmd_income} and data - Add info about incomes in database, ex: /{cmd_income} 1000\n' \
+           f'/{cmd_expense} and data - Add info about expenses in database, ex: /{cmd_expense} 1000\n' \
+           f'/{dir_show_income} - Show options with incomes\n' \
+           f'/{dir_show_expense} - Show options with expenses\n' \
+           f'/{dir_sum_income} - Show options for sum of incomes\n' \
+           f'/{dir_avg_income} - Show options for average sum of incomes\n' \
+           f'/{dir_count_income} - SHow options for count of incomes\n' \
+           f'/{dir_sum_expense} - Show options for sum of expenses\n' \
+           f'/{dir_avg_expense} - Show options for average sum of expenses\n' \
+           f'/{dir_count_expense} - Show options for count of expenses'
 
     bot.send_message(message.chat.id, text=text)
 
 
 def insert_data(table_name, data, user):
-    conn = sqlite3.connect('Balance.db')
+    conn = sqlite3.connect('Balance/Balance.db')
     cursor = conn.cursor()
     cursor.execute(f'CREATE TABLE IF NOT EXISTS {table_name}(ID INTEGER PRIMARY KEY AUTOINCREMENT, USER_ID VARCHAR(50), TOTAL VARCHAR(30), "DATE" DATE)')
     conn.commit()
@@ -73,125 +97,86 @@ def expense(message):
     insert_data('EXPENSE', message.text[9::], message.chat.id)
 
 
-cmd_income = 'income'
-cmd_expense = 'expense'
-
-
 def create_markup(table: str, kind: str,):
     markup = types.InlineKeyboardMarkup()
     period_list = [0, 12, 6, 3, 1]
     for period in period_list:
         if period == 0:
             text = f'Total {"" if kind == "all" else kind + " of"} {table}s'
-            markup.add(types.InlineKeyboardButton(text=text, callback_data=f'{table};{kind};{period}'))
         else:
             text = f'{table.title() + "s" if kind == "all" else kind.title() + " of " + table} for {period} months'
-            markup.add(types.InlineKeyboardButton(text=text, callback_data=f'{table};{kind};{period}'))
+        markup.add(types.InlineKeyboardButton(text=text, callback_data=f'{table};{kind};{period}'))
     return markup
 
+def send_message_to_bot(bot, message, cmd):
+    parms = dirs[cmd]
+    bot.send_message(message.chat.id, parms[0], reply_markup=create_markup(parms[1], parms[2]))
+
 # Make buttons for navigate in incomes table
-@bot.message_handler(commands=['showincomes'])
+@bot.message_handler(commands=[dir_show_income])
 def show_incomes(message):
-    bot.send_message(
-        message.chat.id,
-        text='Period options',
-        reply_markup=create_markup(cmd_income, 'all')
-    )
+    send_message_to_bot(bot, message, dir_show_income)
 
 
 # Make buttons for navigate in expenses table
-@bot.message_handler(commands=['showexpenses'])
+@bot.message_handler(commands=[dir_show_expense])
 def show_expenses(message):
-    bot.send_message(
-        message.chat.id,
-        text='Period options',
-        reply_markup=create_markup(cmd_expense, 'all',)
-    )
+    send_message_to_bot(bot, message, dir_show_expense)
 
 
 # Make buttons for send info about total sum of income in different period
-@bot.message_handler(commands=['incomessum'])
+@bot.message_handler(commands=[dir_sum_income])
 def incomes_sum(message):
-    bot.send_message(
-        message.chat.id,
-        text='Options for sum',
-        reply_markup=create_markup(cmd_income, 'sum')
-    )    
+    send_message_to_bot(bot, message, dir_sum_income)
 
 
 # Make buttons for send info about average sum of incomes in different period
-@bot.message_handler(commands=['averageincomes'])
+@bot.message_handler(commands=[dir_avg_income])
 def incomes_average(message):
-    bot.send_message(
-        message.chat.id,
-        text='Average options',
-        reply_markup=create_markup(cmd_income, 'avg')
-    )
+    send_message_to_bot(bot, message, dir_avg_income)
 
 
 # Make buttons for send info about count of incomes in defferent period
-@bot.message_handler(commands=['countincomes'])
+@bot.message_handler(commands=[dir_count_income])
 def count_of_incomes(message):
-    bot.send_message(
-        message.chat.id,
-        text='Count options',
-        reply_markup=create_markup(cmd_income, 'count')
-    )    
+     send_message_to_bot(bot, message, dir_count_income)
 
 
 # Make buttons for send info about sum of expenses in defferent period
-@bot.message_handler(commands=['expensessum'])
+@bot.message_handler(commands=[dir_sum_expense])
 def incomes_sum(message):
-    bot.send_message(
-        message.chat.id,
-        text='Options for sum',
-        reply_markup=create_markup(cmd_expense, 'sum')
-    )    
+    send_message_to_bot(bot, message, dir_sum_expense)
 
 
 # Make buttons for send info about average sum of expenses in different period
-@bot.message_handler(commands=['averageexpenses'])
+@bot.message_handler(commands=[dir_avg_expense])
 def incomes_average(message):
-    bot.send_message(
-        message.chat.id,
-        text='Average options',
-        reply_markup=create_markup(cmd_expense, 'avg')
-    )
+    send_message_to_bot(bot, message, dir_avg_expense)
 
 
 # Make buttons for send info about count of expenses in different period
-@bot.message_handler(commands=['countexpenses'])
+@bot.message_handler(commands=[dir_count_expense])
 def count_of_incomes(message):
-    bot.send_message(
-        message.chat.id,
-        text='Count options',
-        reply_markup=create_markup(cmd_expense, 'count')
-    )
+    send_message_to_bot(bot, message, dir_count_expense)
 
 
 def get_value(user, table_name: str, operation: str, interval: int):
     filter = f'AND "DATE" BETWEEN DATETIME("now", "-{interval} month") AND DATETIME("now", "localtime") ORDER BY "DATE"' if int(interval) > 0 else ''
     if operation == 'all':
-        conn = sqlite3.connect('Balance.db')
-        cursor = conn.cursor()
-        cursor.execute(f'SELECT * FROM {table_name} WHERE USER_ID = {user} {filter}')
-        data = cursor.fetchall()
-        conn.close()
-        return data
-
+        scope = '*'
     elif operation == 'avg':
-        func = 'AVG'
+        scope = 'AVG(TOTAL)'
     elif operation == 'sum':
-        func = 'SUM'
+        scope = 'SUM(TOTAL)'
     elif operation == 'count':
-        func = 'COUNT'
+        scope = 'COUNT(TOTAL)'
     else:
         raise Exception('Not supported function')
 
-    conn = sqlite3.connect('Balance.db')
+    conn = sqlite3.connect('Balance/Balance.db')
     cursor = conn.cursor()
-    cursor.execute(f'SELECT {func}(TOTAL) FROM {table_name} WHERE USER_ID = {user} {filter}')
-    data = round(cursor.fetchone()[0], 2)
+    cursor.execute(f'SELECT {scope} FROM {table_name} WHERE USER_ID = {user} {filter}')
+    data = round(cursor.fetchone()[0], 2) if operation != 'all' else cursor.fetchall()
     conn.close()
     return data
 
