@@ -3,7 +3,7 @@ import datetime
 import telebot
 from telebot import types
 import sqlite3
-
+import db_methods
 #Our token
 token = '5586466061:AAF9ElE5pbYeQnPCSQ6D4EnBbtuubuE26Rw'
 bot = telebot.TeleBot(token)
@@ -12,29 +12,8 @@ bot = telebot.TeleBot(token)
 # Actions when user write start command
 @bot.message_handler(commands=['start'])
 def start(message):
-    
-    # Connect to our database
-    conn = sqlite3.connect('Balance/Balance.db')
-    cursor = conn.cursor()
-    
-    # Create table
-    cursor.execute('CREATE TABLE IF NOT EXISTS MEMBER(ID INTEGER PRIMARY KEY AUTOINCREMENT, USER_ID VARCHAR(50), FIRST_NAME VARCHAR(50), LAST_NAME VARCHAR(50))')
-    conn.commit()
-    
-    # Select our user id for find hin in our table
-    cursor.execute(f'SELECT USER_ID FROM MEMBER WHERE USER_ID = {message.chat.id}')
-    
-    if cursor.fetchone() is None:
-        
-        # Add user in table
-        cursor.execute('INSERT INTO MEMBER (USER_ID, FIRST_NAME, LAST_NAME) VALUES (?,?,?)', (message.chat.id, message.from_user.first_name, message.from_user.last_name))
-        conn.commit()
-        
-        # Send welcome message
+    db_methods.user_exists(message.chat.id, message.from_user.first_name, message.from_user.last_name)
     bot.send_message(message.chat.id, text=f'Hello, {message.from_user.first_name} {message.from_user.last_name}')
-
-    # Close connection with database
-    conn.close()
 
 cmd_income = 'income'
 cmd_expense = 'expense'
@@ -75,26 +54,16 @@ def help(message):
     bot.send_message(message.chat.id, text=text)
 
 
-def insert_data(table_name, data, user):
-    conn = sqlite3.connect('Balance/Balance.db')
-    cursor = conn.cursor()
-    cursor.execute(f'CREATE TABLE IF NOT EXISTS {table_name}(ID INTEGER PRIMARY KEY AUTOINCREMENT, USER_ID VARCHAR(50), TOTAL VARCHAR(30), "DATE" DATE)')
-    conn.commit()
-    date = datetime.date.today()
-    cursor.execute(f'INSERT INTO {table_name}(USER_ID, TOTAL, "DATE") VALUES (?,?,?)', (user, data, date))
-    conn.commit()
-
-
 # Function for add information about user's income
 @bot.message_handler(commands=['income'])
 def income(message):
-    insert_data('INCOME', message.text[8::], message.chat.id)
+    db_methods.insert_data('INCOME', message.text[8::], message.chat.id)
 
 
 # Function for add information about user's expenses
 @bot.message_handler(commands=['expense'])
 def expense(message):
-    insert_data('EXPENSE', message.text[9::], message.chat.id)
+    db_methods.insert_data('EXPENSE', message.text[9::], message.chat.id)
 
 
 def create_markup(table: str, kind: str,):
@@ -108,9 +77,11 @@ def create_markup(table: str, kind: str,):
         markup.add(types.InlineKeyboardButton(text=text, callback_data=f'{table};{kind};{period}'))
     return markup
 
+
 def send_message_to_bot(bot, message, cmd):
     parms = dirs[cmd]
     bot.send_message(message.chat.id, parms[0], reply_markup=create_markup(parms[1], parms[2]))
+
 
 # Make buttons for navigate in incomes table
 @bot.message_handler(commands=[dir_show_income])
@@ -159,28 +130,6 @@ def incomes_average(message):
 def count_of_incomes(message):
     send_message_to_bot(bot, message, dir_count_expense)
 
-
-def get_value(user, table_name: str, operation: str, interval: int):
-    filter = f'AND "DATE" BETWEEN DATETIME("now", "-{interval} month") AND DATETIME("now", "localtime") ORDER BY "DATE"' if int(interval) > 0 else ''
-    if operation == 'all':
-        scope = '*'
-    elif operation == 'avg':
-        scope = 'AVG(TOTAL)'
-    elif operation == 'sum':
-        scope = 'SUM(TOTAL)'
-    elif operation == 'count':
-        scope = 'COUNT(TOTAL)'
-    else:
-        raise Exception('Not supported function')
-
-    conn = sqlite3.connect('Balance/Balance.db')
-    cursor = conn.cursor()
-    cursor.execute(f'SELECT {scope} FROM {table_name} WHERE USER_ID = {user} {filter}')
-    data = round(cursor.fetchone()[0], 2) if operation != 'all' else cursor.fetchall()
-    conn.close()
-    return data
-
-
 # Make actions when user tap on button
 @bot.callback_query_handler(func=lambda call: True)
 def callback_options(call):
@@ -190,7 +139,7 @@ def callback_options(call):
 
     if call.data.startswith(cmd_income) or call.data.startswith(cmd_expense):
         cmd_parms = call.data.split(';')
-        data = get_value(user, cmd_parms[0].upper(), cmd_parms[1], cmd_parms[2])
+        data = db_methods.get_value(user, cmd_parms[0].upper(), cmd_parms[1], cmd_parms[2])
         tail = '' if cmd_parms[2] == '0' else f'for {cmd_parms[2]} months'
         if type(data) == int or type(data) == float:
             text = f'{cmd_parms[1].title()} of {cmd_parms[0]} {tail}: {data}'
