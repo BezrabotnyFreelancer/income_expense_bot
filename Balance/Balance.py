@@ -17,6 +17,7 @@ def start(message):
     db_methods.user_exists(message.chat.id, message.from_user.first_name, message.from_user.last_name)
     bot.send_message(message.chat.id, text=f'Hello, {message.from_user.first_name} {message.from_user.last_name}')
 
+
 cmd_income = 'income'
 cmd_expense = 'expense'
 dir_show_income = 'showincomes'
