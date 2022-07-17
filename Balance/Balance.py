@@ -4,6 +4,8 @@ import telebot
 from telebot import types
 import sqlite3
 import db_methods
+
+
 #Our token
 token = '5586466061:AAF9ElE5pbYeQnPCSQ6D4EnBbtuubuE26Rw'
 bot = telebot.TeleBot(token)
@@ -110,7 +112,7 @@ def incomes_average(message):
 # Make buttons for send info about count of incomes in defferent period
 @bot.message_handler(commands=[dir_count_income])
 def count_of_incomes(message):
-     send_message_to_bot(bot, message, dir_count_income)
+    send_message_to_bot(bot, message, dir_count_income)
 
 
 # Make buttons for send info about sum of expenses in defferent period
