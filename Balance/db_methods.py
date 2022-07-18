@@ -1,9 +1,20 @@
 import sqlite3
 import datetime
+from enum import Enum
 
 
-def user_exists(id, firstname, lastname):
-    conn = sqlite3.connect('Balance/Balance.db')
+class Scope(Enum):
+    ALL = 1
+    SUM = 2
+    COUNT = 3
+    AVG = 4
+
+
+db_name = 'Balance/Balance.db'
+
+
+def validate_member(id, firstname, lastname):
+    conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
 
     # Create table
@@ -24,7 +35,7 @@ def user_exists(id, firstname, lastname):
 
 
 def insert_data(table_name, data, user):
-    conn = sqlite3.connect('Balance/Balance.db')
+    conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
     cursor.execute(f'CREATE TABLE IF NOT EXISTS {table_name}(ID INTEGER PRIMARY KEY AUTOINCREMENT, USER_ID VARCHAR(50), TOTAL VARCHAR(30), "DATE" DATE)')
     conn.commit()
@@ -34,22 +45,24 @@ def insert_data(table_name, data, user):
     conn.close()
 
 
-def get_value(user, table_name: str, operation: str, interval: int):
-    filter = f'AND "DATE" BETWEEN DATETIME("now", "-{interval} month") AND DATETIME("now", "localtime") ORDER BY "DATE"' if int(interval) > 0 else ''
-    if operation == 'all':
-        scope = '*'
-    elif operation == 'avg':
-        scope = 'AVG(TOTAL)'
-    elif operation == 'sum':
-        scope = 'SUM(TOTAL)'
-    elif operation == 'count':
-        scope = 'COUNT(TOTAL)'
-    else:
-        raise Exception('Not supported function')
+operations = {
+    Scope.ALL.name: '*',
+    Scope.SUM.name: 'SUM(TOTAL)',
+    Scope.COUNT.name: 'COUNT(TOTAL)',
+    Scope.AVG.name: 'AVG(TOTAL)'
+}
 
-    conn = sqlite3.connect('Balance/Balance.db')
+
+def get_data(user, table_name: str, operation, interval: int):
+    try:
+        scope = operations[operation]
+    except KeyError:
+        raise Exception('Not supported operation')
+    filter = f'AND "DATE" BETWEEN DATETIME("now", "-{interval} month") AND DATETIME("now", "localtime") ORDER BY "DATE"' if int(
+        interval) > 0 else ''
+    conn = sqlite3.connect(db_name)
     cursor = conn.cursor()
     cursor.execute(f'SELECT {scope} FROM {table_name} WHERE USER_ID = {user} {filter}')
-    data = round(cursor.fetchone()[0], 2) if operation != 'all' else cursor.fetchall()
+    data = round(cursor.fetchone()[0], 2) if operation != Scope.ALL.name else cursor.fetchall()
     conn.close()
     return data
