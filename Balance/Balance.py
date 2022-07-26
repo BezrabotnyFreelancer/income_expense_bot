@@ -4,13 +4,9 @@ import telebot
 from telebot import types
 import sqlite3
 import db_methods
-from db_methods import Scope
+from db_methods import Scope, Budgets
 from enum import Enum
 
-
-class Budgets(Enum):
-    INCOME = 1
-    EXPENSE = 2
 
 #Our token
 token = '5586466061:AAF9ElE5pbYeQnPCSQ6D4EnBbtuubuE26Rw'
@@ -36,15 +32,16 @@ dir_avg_expense = 'averageexpenses'
 dir_count_expense = 'countexpenses'
 
 dirs = {
-    dir_show_income: ('Period options', Budgets.INCOME.name, Scope.ALL.name),
-    dir_show_expense: ('Period options', Budgets.EXPENSE.name, Scope.ALL.name),
-    dir_sum_income: ('Options for sum', Budgets.INCOME.name, Scope.SUM.name),
-    dir_sum_expense: ('Options for sum', Budgets.EXPENSE.name, Scope.SUM.name),
-    dir_avg_income: ('Options for average', Budgets.INCOME.name, Scope.AVG.name),
-    dir_avg_expense: ('Options for average', Budgets.EXPENSE.name, Scope.AVG.name),
-    dir_count_income: ('Options for count', Budgets.INCOME.name, Scope.COUNT.name),
-    dir_count_expense: ('Options for count', Budgets.EXPENSE.name, Scope.COUNT.name)
+    dir_show_income: ('Period options', Budgets.INCOME, Scope.ALL),
+    dir_show_expense: ('Period options', Budgets.EXPENSE, Scope.ALL),
+    dir_sum_income: ('Options for sum', Budgets.INCOME, Scope.SUM),
+    dir_sum_expense: ('Options for sum', Budgets.EXPENSE, Scope.SUM),
+    dir_avg_income: ('Options for average', Budgets.INCOME, Scope.AVG),
+    dir_avg_expense: ('Options for average', Budgets.EXPENSE, Scope.AVG),
+    dir_count_income: ('Options for count', Budgets.INCOME, Scope.COUNT),
+    dir_count_expense: ('Options for count', Budgets.EXPENSE, Scope.COUNT)
 }
+
 
 # Manual for our user
 @bot.message_handler(commands=['help'])
@@ -63,27 +60,38 @@ def help(message):
     bot.send_message(message.chat.id, text=text)
 
 
+def validate_data(parm):
+    try:
+        data = int(parm)
+        return data
+    except ValueError:
+        raise Exception('Incorrect value type')
+
+
 # Function for add information about user's income
 @bot.message_handler(commands=[dir_income])
 def income(message):
-    db_methods.insert_data(Budgets.INCOME.name, message.text[8::], message.chat.id)
+    data = validate_data(message.text[8::])
+    db_methods.insert_data(Budgets.INCOME, data, message.chat.id)
 
 
 # Function for add information about user's expenses
 @bot.message_handler(commands=[dir_expense])
 def expense(message):
-    db_methods.insert_data(Budgets.EXPENSE.name, message.text[9::], message.chat.id)
+    data = validate_data((message.text[9::]))
+    db_methods.insert_data(Budgets.EXPENSE, data, message.chat.id)
 
 
-def create_markup(table: str, kind: str):
+def create_markup(table: Budgets, kind: Scope):
     markup = types.InlineKeyboardMarkup()
     period_list = [0, 12, 6, 3, 1]
+
     for period in period_list:
         if period == 0:
-            text = f'Total {"" if kind == Scope.ALL.name else kind.lower() + " of"} {table.lower()}s'
+            text = f'Total {"" if kind == Scope.ALL else kind.name.lower() + " of"} {table.name.lower()}s'
         else:
-            text = f'{table.title() + "s" if kind == Scope.ALL.name else kind.title() + " of " + table.lower()} for {period} months'
-        markup.add(types.InlineKeyboardButton(text=text, callback_data=f'{table};{kind};{period}'))
+            text = f'{table.name.title() + "s" if kind == Scope.ALL else kind.name.title() + " of " + table.name.lower()} for {period} months'
+        markup.add(types.InlineKeyboardButton(text=text, callback_data=f'{table.name};{kind.name};{period}'))
     return markup
 
 
@@ -149,7 +157,7 @@ def callback_options(call):
 
     if call.data.startswith(Budgets.INCOME.name) or call.data.startswith(Budgets.EXPENSE.name):
         cmd_parms = call.data.split(';')
-        data = db_methods.get_data(user, cmd_parms[0], cmd_parms[1], cmd_parms[2])
+        data = db_methods.get_data(user, Budgets[cmd_parms[0]], Scope[cmd_parms[1]], cmd_parms[2])
         tail = '' if cmd_parms[2] == '0' else f'for {cmd_parms[2]} months'
         if type(data) == int or type(data) == float:
             text = f'{cmd_parms[1].title()} of {cmd_parms[0].lower()} {tail}: {data}'
@@ -159,7 +167,7 @@ def callback_options(call):
             )
         else:
             for value in data:
-                text = f'ID: {value[0]} - Total: {value[2]}, date: {value[3]}'
+                text = f'ID: {value[0]} - Total: {value[3]}, date: {value[2]}'
                 bot.send_message(
                     call.message.chat.id,
                     text=text
