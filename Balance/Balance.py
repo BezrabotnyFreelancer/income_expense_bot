@@ -60,10 +60,14 @@ def help(message):
     bot.send_message(message.chat.id, text=text)
 
 
-def validate_data(parm):
+def extract_data(parm):
     try:
-        data = int(parm)
+        data = float(parm.split()[1])
         return data
+
+    except IndexError:
+        raise Exception('Data is missing')
+
     except ValueError:
         raise Exception('Incorrect value type')
 
@@ -71,14 +75,14 @@ def validate_data(parm):
 # Function for add information about user's income
 @bot.message_handler(commands=[dir_income])
 def income(message):
-    data = validate_data(message.text[8::])
+    data = extract_data(message.text)
     db_methods.insert_data(Budgets.INCOME, data, message.chat.id)
 
 
 # Function for add information about user's expenses
 @bot.message_handler(commands=[dir_expense])
 def expense(message):
-    data = validate_data((message.text[9::]))
+    data = extract_data(message.text)
     db_methods.insert_data(Budgets.EXPENSE, data, message.chat.id)
 
 
