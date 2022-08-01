@@ -58,6 +58,11 @@ operations = {
     Scope.AVG: 'AVG(TOTAL)'
 }
 
+table_names = {
+    Budgets.INCOME: 'INCOME',
+    Budgets.EXPENSE: 'EXPENSE'
+}
+
 
 def get_data(user, budget: Budgets, operation: Scope, interval: int):
     try:
@@ -73,9 +78,3 @@ def get_data(user, budget: Budgets, operation: Scope, interval: int):
     data = round(cursor.fetchone()[0], 2) if operation != Scope.ALL else cursor.fetchall()
     conn.close()
     return data
-
-
-table_names = {
-    Budgets.INCOME: 'INCOME',
-    Budgets.EXPENSE: 'EXPENSE'
-}
